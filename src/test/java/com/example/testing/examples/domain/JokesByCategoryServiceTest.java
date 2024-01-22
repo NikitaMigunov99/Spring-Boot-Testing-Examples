@@ -3,6 +3,7 @@ package com.example.testing.examples.domain;
 import com.example.testing.examples.infrastructure.launcher.FeatureLauncher;
 import com.example.testing.examples.model.JokeModel;
 import com.example.testing.examples.source.JokesSource;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,16 +12,15 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 public class JokesByCategoryServiceTest {
 
     private final JokesSource newJokesSource = mock();
@@ -47,7 +47,7 @@ public class JokesByCategoryServiceTest {
 
         List<JokeModel> list = jokesService.getByCategory(category);
 
-        assertThat(list).isEqualTo(jokes);
+        Assertions.assertEquals(list, jokes);
         verify(newJokesSource).getJokeByType(category);
     }
 
@@ -59,7 +59,7 @@ public class JokesByCategoryServiceTest {
 
         List<JokeModel> list = jokesService.getByCategory(category);
 
-        assertThat(list).isEqualTo(jokes);
+        Assertions.assertEquals(list, jokes);
         verify(newJokesSource).getJokesList();
     }
 
@@ -71,7 +71,7 @@ public class JokesByCategoryServiceTest {
 
         List<JokeModel> list = jokesService.getByCategory(category);
 
-        assertThat(list).isEqualTo(jokes);
+        Assertions.assertEquals(list, jokes);
         verify(newJokesSource).getJokesList();
     }
 

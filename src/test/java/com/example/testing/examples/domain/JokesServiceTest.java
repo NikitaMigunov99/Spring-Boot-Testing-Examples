@@ -6,18 +6,19 @@ import com.example.testing.examples.infrastructure.analytics.JokesEventType;
 import com.example.testing.examples.infrastructure.launcher.FeatureLauncher;
 import com.example.testing.examples.model.JokeModel;
 import com.example.testing.examples.source.JokesSource;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.mockito.MockedStatic;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(SpringExtension.class)
+@ExtendWith(MockitoExtension.class)
 public class JokesServiceTest {
 
     private final FeatureLauncher featureLauncher = mock();
@@ -39,10 +40,10 @@ public class JokesServiceTest {
 
         JokeModel model = jokesService.getJoke();
 
-        assertThat(model).isEqualTo(firstModel);
+        Assertions.assertEquals(model, firstModel);
 
         //Only for example!!!
-        assertThat(model).isNotEqualTo(secondModel);
+        Assertions.assertNotEquals(model, secondModel);
 
         verify(analyticsGateway, times(1)).getJokesEvent(JokesEventType.ONE_JOKE);
         verify(analyticsGateway, times(1)).newJokesSourceEvent();
@@ -55,12 +56,12 @@ public class JokesServiceTest {
 
     @Test
     public void getJokes() throws ServiceUnavailableException {
-        List<JokeModel> jokes =  Arrays.asList(firstModel, secondModel);
+        List<JokeModel> jokes = Arrays.asList(firstModel, secondModel);
 
         when(featureLauncher.isJokesV2SourceEnabled()).thenReturn(true);
         when(newJokesSource.getJokesList()).thenReturn(jokes);
 
-        assertThat(jokesService.getJokesList()).isEqualTo(jokes);
+        Assertions.assertEquals(jokesService.getJokesList(), jokes);
 
         verify(analyticsGateway, times(1)).getJokesEvent(JokesEventType.MANY_JOKES);
         verify(analyticsGateway, times(1)).newJokesSourceEvent();
@@ -76,7 +77,7 @@ public class JokesServiceTest {
         when(featureLauncher.isJokesV2SourceEnabled()).thenReturn(false);
         when(oldJokesSource.getJoke()).thenReturn(firstModel);
 
-        assertThat(jokesService.getJoke()).isEqualTo(firstModel);
+        Assertions.assertEquals(jokesService.getJoke(), firstModel);
 
         verify(analyticsGateway, times(1)).getJokesEvent(JokesEventType.ONE_JOKE);
         verify(featureLauncher).isJokesV2SourceEnabled();
@@ -89,12 +90,12 @@ public class JokesServiceTest {
 
     @Test
     public void getJokesOld() throws ServiceUnavailableException {
-        List<JokeModel> jokes =  Arrays.asList(firstModel, secondModel);
+        List<JokeModel> jokes = Arrays.asList(firstModel, secondModel);
 
         when(featureLauncher.isJokesV2SourceEnabled()).thenReturn(false);
         when(oldJokesSource.getJokesList()).thenReturn(jokes);
 
-        assertThat(jokesService.getJokesList()).isEqualTo(jokes);
+        Assertions.assertEquals(jokesService.getJokesList(), jokes);
 
         verify(analyticsGateway, times(1)).getJokesEvent(JokesEventType.MANY_JOKES);
         verify(featureLauncher).isJokesV2SourceEnabled();
@@ -109,7 +110,7 @@ public class JokesServiceTest {
         when(featureLauncher.isJokesV2SourceEnabled()).thenReturn(true);
         when(newJokesSource.getJoke()).thenThrow(RuntimeException.class);
 
-        assertThatExceptionOfType(ServiceUnavailableException.class).isThrownBy(jokesService::getJoke);
+        Assertions.assertThrows(ServiceUnavailableException.class, jokesService::getJoke);
 
         verify(analyticsGateway, times(1)).getJokesEvent(JokesEventType.ONE_JOKE);
         verify(analyticsGateway, times(1)).newJokesSourceEvent();
@@ -119,5 +120,21 @@ public class JokesServiceTest {
 
         verifyNoMoreInteractions(analyticsGateway, featureLauncher, newJokesSource);
         verifyNoInteractions(oldJokesSource);
+    }
+
+
+    @Test
+    public void getJokesSpy() throws ServiceUnavailableException {
+        List<JokeModel> jokes = Arrays.asList(firstModel, secondModel);
+
+        when(featureLauncher.isJokesV2SourceEnabled()).thenReturn(true);
+        when(newJokesSource.getJokesList()).thenReturn(jokes);
+
+        JokesService jokesServiceSpy = spy(new JokesService(featureLauncher, analyticsGateway, newJokesSource, oldJokesSource));
+
+        Assertions.assertEquals(jokesServiceSpy.getJokesList(), jokes);
+
+        verify(jokesServiceSpy).getJokesList();
+        verifyNoMoreInteractions(jokesServiceSpy);
     }
 }
