@@ -7,10 +7,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.*;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -66,6 +63,22 @@ public class JokesByCategoryServiceTest {
     @ParameterizedTest
     @MethodSource("getArguments")
     public void getJoke(String category, boolean isEnabled) {
+        when(newJokesSource.getJokesList()).thenReturn(jokes);
+        when(featureLauncher.isJokesV2SourceEnabled()).thenReturn(isEnabled);
+
+        List<JokeModel> list = jokesService.getByCategory(category);
+
+        Assertions.assertEquals(list, jokes);
+        verify(newJokesSource).getJokesList();
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "fake_category,true",
+            "programming,false",
+            "fake_category,false"}
+    )
+    public void getJokeWithCsv(String category, boolean isEnabled) {
         when(newJokesSource.getJokesList()).thenReturn(jokes);
         when(featureLauncher.isJokesV2SourceEnabled()).thenReturn(isEnabled);
 
