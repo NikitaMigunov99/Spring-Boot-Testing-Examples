@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: jokes-app-service
+spec:
+  selector:
+    app: jokes-app
+  ports:
+    - name: http
+      port: 9091
+      targetPort: 7000
